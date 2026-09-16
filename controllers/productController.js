@@ -1,6 +1,6 @@
-import Product from "../models/product.js";
 import Cart from "../models/Cart.js";
 import HttpError from "../utils/HttpError.js";
+import Product from '../models/Product.js'
 
 
 export const AllProduct = async (req, res, next) => {
