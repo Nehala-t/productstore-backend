@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 console.log("Mongo URI:", process.env.mongodbURI);
 
-const dbConnect = async () => {
+const connectDB = async () => {
   try {
     await mongoose.connect(process.env.mongodbURI);
 
@@ -16,4 +16,4 @@ const dbConnect = async () => {
   }
 };
 
-export default dbConnect;
+export default connectDB;

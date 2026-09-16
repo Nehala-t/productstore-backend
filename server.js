@@ -1,10 +1,10 @@
 import express from "express";
-import ConnectDb from "./config/Connectdb.js";
 import authRoutes from "./routes/authRoutes.js"
 import productRoutes from "./routes/productRoutes.js"
 import cartRoutes from "./routes/cartRoutes.js"
 import cors from "cors";
 import path from "path"
+import connectDB from "./config/connectDB.js";
 
 
 const app = express();
@@ -21,7 +21,7 @@ app.use(cors());
 app.use("/upload", express.static(path.join(process.cwd(), "upload")));
 
 // Connect MongoDB
-ConnectDb();
+connectDB()
 
 
 
