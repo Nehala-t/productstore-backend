@@ -5,6 +5,10 @@ import cartRoutes from "./routes/cartRoutes.js"
 import cors from "cors";
 import path from "path"
 import connectDB from "./config/ConnectDb.js";
+import dotenv from 'dotenv'
+
+
+dotenv.config()
 
 
 const app = express();
