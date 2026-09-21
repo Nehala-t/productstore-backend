@@ -12,7 +12,7 @@ router.post("/AddProducts", authMiddleware, upload.single("image"),  productVali
 router.get("/AllProducts", authMiddleware, AllProduct);
 router.get("/ViewProduct", ViewProduct);
 router.get("/viewSellerProducts", authMiddleware, viewSellerProducts);
-router.post("/update" ,authMiddleware, upload.single("image"), productValidation, validate, update);
+router.post("/update/:id" ,authMiddleware, upload.single("image"), productValidation, validate, update);
 router.delete(
   "/deleteProduct/:id",
   authMiddleware,

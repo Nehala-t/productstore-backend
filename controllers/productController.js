@@ -196,6 +196,10 @@ export const update = async (req, res, next) => {
     const userId = req.user.user_id;
     const role = req.user.role;
 
+    console.log("PRODUCT ID:", id);
+    console.log("USER ID:", userId);
+    console.log("ROLE:", role);
+
     // Only sellers can update products
     if (role !== "seller") {
       return next(
@@ -203,29 +207,26 @@ export const update = async (req, res, next) => {
       );
     }
 
-    const id = req.originalUrl.split("?")[1];
-
-    console.log("ID:", id);
-    console.log("USER ID:", userId);
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
-
     // Find the product first
     const product = await Product.findById(id);
-
     if (!product) {
-      return next(new HttpError("Product not found", 404));
-    }
-
-    // Check whether this seller owns the product
-    if (product.sellerId.toString() !== userId.toString()) {
       return next(
-        new HttpError(
-          "You are not authorized to update this product",
-          403
-        )
+        new HttpError("Product not found", 404)
       );
     }
+
+        console.log("PRODUCT SELLER ID:", product.sellerId);
+
+
+    if (product.sellerId.toString() !== userId.toString()) {
+  return next(
+    new HttpError(
+      "You are not authorized to update this product",
+      403
+    )
+  );
+    }
+
 
     const updateData = {
       title: req.body.title,

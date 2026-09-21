@@ -142,8 +142,9 @@ export const removeCart = async (req, res, next) => {
       );
     }
 
-    // Find the cart item first
+    // Find user's active cart item
     const cartItem = await Cart.findOne({
+      userId: userId,
       productId: productId,
       isDeleted: false,
     });
