@@ -184,10 +184,12 @@ export const viewSellerProducts = async (req, res, next) => {
 
 export const update = async (req, res, next) => {
   try {
+    if (!req.user || !req.user.user_id) {
+      return next(new HttpError("Unauthorized user", 401));
+    }
+
     const userId = req.user.user_id;
     const role = req.user.role;
-
-    // Get product ID from URL
     const { id } = req.params;
 
     console.log("===== UPDATE PRODUCT =====");
@@ -202,7 +204,7 @@ export const update = async (req, res, next) => {
       );
     }
 
-    // Find the product first
+    // Find product
     const product = await Product.findById(id);
 
     if (!product) {
@@ -213,13 +215,13 @@ export const update = async (req, res, next) => {
 
     console.log("PRODUCT SELLER ID:", product.sellerId);
 
-    console.log(
-      "OWNER MATCH:",
-      product.sellerId.toString() === userId.toString()
-    );
+    const ownerMatch =
+      product.sellerId.toString() === userId.toString();
 
-    // Check product ownership
-    if (product.sellerId.toString() !== userId.toString()) {
+    console.log("OWNER MATCH:", ownerMatch);
+
+    // Only the seller who owns the product can update it
+    if (!ownerMatch) {
       return next(
         new HttpError(
           "You are not authorized to update this product",
@@ -235,7 +237,6 @@ export const update = async (req, res, next) => {
       category: req.body.category,
     };
 
-    // If a new image was selected
     if (req.file) {
       updateData.image = `/upload/${req.file.filename}`;
     }
