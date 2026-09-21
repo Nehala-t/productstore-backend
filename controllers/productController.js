@@ -196,6 +196,9 @@ export const update = async (req, res, next) => {
     const userId = req.user.user_id;
     const role = req.user.role;
 
+    // Get product ID from URL
+    const { id } = req.params;
+
     console.log("PRODUCT ID:", id);
     console.log("USER ID:", userId);
     console.log("ROLE:", role);
