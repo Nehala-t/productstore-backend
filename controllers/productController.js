@@ -199,9 +199,15 @@ export const update = async (req, res, next) => {
     // Get product ID from URL
     const { id } = req.params;
 
-    console.log("PRODUCT ID:", id);
-    console.log("USER ID:", userId);
-    console.log("ROLE:", role);
+    console.log("===== UPDATE PRODUCT =====");
+console.log("PRODUCT ID:", id);
+console.log("LOGGED USER ID:", userId);
+console.log("LOGGED USER ROLE:", role);
+console.log("PRODUCT SELLER ID:", product.sellerId);
+console.log(
+  "OWNER MATCH:",
+  product.sellerId.toString() === userId.toString()
+);
 
     // Only sellers can update products
     if (role !== "seller") {
