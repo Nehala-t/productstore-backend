@@ -14,9 +14,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Uploads
-upload/
-uploads/
+
 
 # Temporary files
 tmp/
