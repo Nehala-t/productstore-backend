@@ -191,14 +191,9 @@ export const update = async (req, res, next) => {
     const { id } = req.params;
 
     console.log("===== UPDATE PRODUCT =====");
-console.log("PRODUCT ID:", id);
-console.log("LOGGED USER ID:", userId);
-console.log("LOGGED USER ROLE:", role);
-console.log("PRODUCT SELLER ID:", product.sellerId);
-console.log(
-  "OWNER MATCH:",
-  product.sellerId.toString() === userId.toString()
-);
+    console.log("PRODUCT ID:", id);
+    console.log("LOGGED USER ID:", userId);
+    console.log("LOGGED USER ROLE:", role);
 
     // Only sellers can update products
     if (role !== "seller") {
@@ -209,24 +204,29 @@ console.log(
 
     // Find the product first
     const product = await Product.findById(id);
+
     if (!product) {
       return next(
         new HttpError("Product not found", 404)
       );
     }
 
-        console.log("PRODUCT SELLER ID:", product.sellerId);
+    console.log("PRODUCT SELLER ID:", product.sellerId);
 
+    console.log(
+      "OWNER MATCH:",
+      product.sellerId.toString() === userId.toString()
+    );
 
+    // Check product ownership
     if (product.sellerId.toString() !== userId.toString()) {
-  return next(
-    new HttpError(
-      "You are not authorized to update this product",
-      403
-    )
-  );
+      return next(
+        new HttpError(
+          "You are not authorized to update this product",
+          403
+        )
+      );
     }
-
 
     const updateData = {
       title: req.body.title,
@@ -239,6 +239,8 @@ console.log(
     if (req.file) {
       updateData.image = `/upload/${req.file.filename}`;
     }
+
+    console.log("UPDATE DATA:", updateData);
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
@@ -254,7 +256,9 @@ console.log(
       message: "Product updated successfully",
       data: updatedProduct,
     });
+
   } catch (error) {
+    console.error("UPDATE PRODUCT ERROR:", error);
     return next(error);
   }
 };
