@@ -83,24 +83,28 @@ export const AllProduct = async (req, res, next) => {
 
 export const AddProduct = async (req, res, next) => {
   try {
-
-    // Check authenticated user
     if (!req.user || !req.user.user_id) {
       return next(new HttpError("Unauthorized user", 401));
     }
 
-    const role = req.user.role;
-    console.log("role====>",role);
-    const id = req.user.user_id;
+    const { user_id, role } = req.user;
 
+    console.log("ROLE:", role);
+    console.log("USER ID:", user_id);
     console.log("BODY:", req.body);
     console.log("FILE:", req.file);
 
-    // Only seller can add product
     if (role !== "seller") {
-      return next(new HttpError("Only sellers can add products", 403));
+      return next(
+        new HttpError("Only sellers can add products", 403)
+      );
     }
 
+    if (!req.file) {
+      return next(
+        new HttpError("Image file is required", 400)
+      );
+    }
 
     const {
       title,
@@ -109,24 +113,10 @@ export const AddProduct = async (req, res, next) => {
       category,
     } = req.body;
 
-     if (!req.file) {
-      return next(new HttpError("Image file is required", 400));
-    }
-
-    // Save browser-accessible path
     const image = `/upload/${req.file.filename}`;
-    console.log("Saved image path:", image);
 
-    // Validate required fields
-    // if (!title || !description || price === undefined || !image ) {
-    //   return next(new HttpError("Required fields are missing", 400));
-    // }
-
-     
-
-    // Create product
     const newProduct = new Product({
-      sellerId : id,
+      sellerId: user_id,
       title,
       description,
       price,
@@ -134,7 +124,6 @@ export const AddProduct = async (req, res, next) => {
       category,
     });
 
-    // Save to MongoDB
     await newProduct.save();
 
     return res.status(201).json({
@@ -142,7 +131,9 @@ export const AddProduct = async (req, res, next) => {
       message: "Product added successfully",
       data: newProduct,
     });
+
   } catch (error) {
+    console.error("ADD PRODUCT ERROR:", error);
     return next(error);
   }
 };
