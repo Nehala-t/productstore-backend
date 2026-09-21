@@ -83,24 +83,36 @@ export const AllProduct = async (req, res, next) => {
 
 export const AddProduct = async (req, res, next) => {
   try {
+    console.log("========== ADD PRODUCT START ==========");
+
+    console.log("REQ.USER:", req.user);
+    console.log("REQ.BODY:", req.body);
+    console.log("REQ.FILE:", req.file);
+
     if (!req.user || !req.user.user_id) {
-      return next(new HttpError("Unauthorized user", 401));
+      console.log("ERROR: No authenticated user");
+
+      return next(
+        new HttpError("Unauthorized user", 401)
+      );
     }
 
     const { user_id, role } = req.user;
 
-    console.log("ROLE:", role);
     console.log("USER ID:", user_id);
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
+    console.log("ROLE:", role);
 
     if (role !== "seller") {
+      console.log("ERROR: User is not seller");
+
       return next(
         new HttpError("Only sellers can add products", 403)
       );
     }
 
     if (!req.file) {
+      console.log("ERROR: No image received");
+
       return next(
         new HttpError("Image file is required", 400)
       );
@@ -113,7 +125,15 @@ export const AddProduct = async (req, res, next) => {
       category,
     } = req.body;
 
+    console.log("TITLE:", title);
+    console.log("DESCRIPTION:", description);
+    console.log("PRICE:", price);
+    console.log("CATEGORY:", category);
+    console.log("FILE NAME:", req.file.filename);
+
     const image = `/upload/${req.file.filename}`;
+
+    console.log("IMAGE PATH:", image);
 
     const newProduct = new Product({
       sellerId: user_id,
@@ -124,7 +144,13 @@ export const AddProduct = async (req, res, next) => {
       category,
     });
 
+    console.log("PRODUCT OBJECT:", newProduct);
+
     await newProduct.save();
+
+    console.log("PRODUCT SAVED:", newProduct);
+
+    console.log("========== ADD PRODUCT SUCCESS ==========");
 
     return res.status(201).json({
       success: true,
@@ -133,7 +159,12 @@ export const AddProduct = async (req, res, next) => {
     });
 
   } catch (error) {
-    console.error("ADD PRODUCT ERROR:", error);
+    console.error("========== ADD PRODUCT ERROR ==========");
+    console.error("MESSAGE:", error.message);
+    console.error("NAME:", error.name);
+    console.error("ERROR:", error);
+    console.error("========================================");
+
     return next(error);
   }
 };
@@ -192,10 +223,7 @@ export const update = async (req, res, next) => {
     const role = req.user.role;
     const { id } = req.params;
 
-    console.log("===== UPDATE PRODUCT =====");
-    console.log("PRODUCT ID:", id);
-    console.log("LOGGED USER ID:", userId);
-    console.log("LOGGED USER ROLE:", role);
+  
 
     // Only sellers can update products
     if (role !== "seller") {
@@ -213,7 +241,6 @@ export const update = async (req, res, next) => {
       );
     }
 
-    console.log("PRODUCT SELLER ID:", product.sellerId);
 
     const ownerMatch =
       product.sellerId.toString() === userId.toString();
