@@ -7,10 +7,7 @@ import jwt from 'jsonwebtoken';
 export const userRegister = async (req, res, next) => {
     try {
         const { firstName, lastName, email, password, role } = req.body;
-        // Basic validation
-        // if (!firstName || !lastName || !email || !password) {
-        //   return next(new HttpError("All fields are required", 400));
-        // }
+
 
         const normalizedEmail = email.toLowerCase().trim();
 
@@ -42,6 +39,20 @@ export const userRegister = async (req, res, next) => {
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_TOKEN_EXPIRY }
         );
+
+        // Store JWT in cookie 
+        res.cookie("accessToken", token, { 
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === "production", 
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", maxAge: 24 * 60 * 60 * 1000, 
+        });
+
+        // Store role in cookie 
+        res.cookie("role", newUser.role, { 
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === "production", 
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", maxAge: 24 * 60 * 60 * 1000, 
+        });
 
         return res.status(201).json({
             success: true,
@@ -85,9 +96,6 @@ export const userLogin = async (req, res, next) => {
             return next(new HttpError('Invalid email or password', 401));
         }
 
-        console.log('Found User Stored Hash:', user.password);
-        console.log('Plaintext Password Entered:', password);
-
         const isMatch = await bcrypt.compare(password, user.password);
         console.log('Bcrypt Match Result:', isMatch);
 
@@ -96,6 +104,8 @@ export const userLogin = async (req, res, next) => {
             return next(new HttpError('Invalid email or password', 401));
         }
 
+
+        // Create JWT
         const token = jwt.sign(
             {
                 user_id: user._id,
@@ -104,6 +114,20 @@ export const userLogin = async (req, res, next) => {
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_TOKEN_EXPIRY }
         );
+
+        // Store JWT in cookie 
+        res.cookie("accessToken", token, { 
+            httpOnly: false, 
+            secure: process.env.NODE_ENV === "production", 
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", maxAge: 24 * 60 * 60 * 1000, 
+        });
+
+        // Store role in cookie 
+        res.cookie("role", user.role, { 
+            httpOnly: false, 
+            secure: process.env.NODE_ENV === "production", 
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", maxAge: 24 * 60 * 60 * 1000, 
+        });
 
         return res.status(200).json({
             success: true,
@@ -121,4 +145,91 @@ export const userLogin = async (req, res, next) => {
             new HttpError(error.message || 'Internal Server Error', 500)
         );
     }
+};
+
+
+export const updateDefaultAddress = async (req, res, next) => {
+  try {
+    if (req.user.role !== "user") {
+      return res.status(403).json({
+        success: false,
+        message: "Only users can update address",
+      });
+    }
+
+    const userId = req.user.user_id;
+
+    const {
+      firstName,
+      lastName,
+      phone,
+      address,
+      city,
+      state,
+      pincode,
+    } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        defaultAddress: {
+          firstName,
+          lastName,
+          phone,
+          address,
+          city,
+          state,
+          pincode,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Default address updated successfully",
+      data: user.defaultAddress,
+    });
+  } catch (error) {
+    console.error(
+      "Update default address error:",
+      error
+    );
+
+    next(error);
+  }
+};
+
+export const getDefaultAddress = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    if (req.user.role !== "user") {
+      return res.status(403).json({
+        success: false,
+        message: "Only users can view address",
+      });
+    }
+
+    const user = await User.findById(
+      req.user.user_id
+    ).select("defaultAddress");
+
+    return res.status(200).json({
+      success: true,
+      message: "Default address fetched successfully",
+      data: user?.defaultAddress || null,
+    });
+  } catch (error) {
+    console.error(
+      "Get default address error:",
+      error
+    );
+
+    next(error);
+  }
 };

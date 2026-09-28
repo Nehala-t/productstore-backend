@@ -2,10 +2,13 @@ import express from "express";
 import authRoutes from "./routes/authRoutes.js"
 import productRoutes from "./routes/productRoutes.js"
 import cartRoutes from "./routes/cartRoutes.js"
+import wishListRoutes from "./routes/wishListRoutes.js"
+import checkoutRoutes from "./routes/checkoutRoutes.js"
 import cors from "cors";
 import path from "path"
 import connectDB from "./config/ConnectDb.js";
 import dotenv from 'dotenv'
+import cookieParser from "cookie-parser";
 
 
 dotenv.config()
@@ -18,8 +21,15 @@ const PORT = 5000;
 // Middleware
 app.use(express.json());
 
+app.use(cookieParser());
+
 // Enable CORS to allow requests from different origins
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
 
 // Serve uploaded images
 app.use("/upload", express.static(path.join(process.cwd(), "upload")));
@@ -37,40 +47,17 @@ app.use("/api/users", authRoutes);
 
 app.use("/api", productRoutes);
 
-// Product routes
+// Cart routes
 app.use("/api",cartRoutes);
+
+// Wish list  routes
+app.use("/api/wishlist",wishListRoutes);
+
+// Checout  routes
+app.use("/api/checkout",checkoutRoutes);
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
-// import dotenv from 'dotenv'
-// import cors from 'cors'
-// import express from 'express'
-// import { ConnectDB }  from './config/ConnectDb.js'
-// import routes from './routes/authRoutes.js'
-// import authMiddleware from './middleware/authMiddleware.js'
-
-
-// //load .env variable
-// dotenv.config()
-
-
-// //port define,express call
-// const PORT = process.env.PORT || 3000
-// const app = express()
-
-// //connect to mongodbe
-// ConnectDB();
-
-// //middleware
-// app.use(express.json());
-// app.use(cors());
-
-// app.use("/api/users",routes);
-
-// app.use(authMiddleware);
-
-// //start server
-// app.listen(PORT,() => console.log(`server running on http://localhost:${PORT}`))
