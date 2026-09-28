@@ -26,7 +26,7 @@ app.use(cookieParser());
 // Enable CORS to allow requests from different origins
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
